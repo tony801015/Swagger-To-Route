@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:swagger_to_route/pathParamter.dart';
 import 'package:yaml/yaml.dart';
 
 /**
@@ -17,15 +18,21 @@ Future<void> main() async {
     var dir = Directory(SOURCE_Directory_PATH);
     List contents = dir.listSync();
     for (var fileOrDir in contents) {
-      // Read file.
+      // Read file and create data structures
       var content = await new File(fileOrDir.path).readAsString();
       Map doc = loadYaml(content);
       for (String path in doc['paths'].keys) {
         for (String item in doc['paths'][path].keys) {
-          result.add({PATH_NAME: path, HTTP_METHOD: item});
+          result.add({
+            PATH_NAME: path.replaceAll('{', ':').replaceAll('}', ''),
+            HTTP_METHOD: item
+          });
         }
       }
     }
+
+    // TODO: Middleware
+    // pathParamter(result);
 
     // Create file.
     await new File(CREATE_FILE_PATH_AND_NAME).create(recursive: true);
